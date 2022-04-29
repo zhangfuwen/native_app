@@ -42,14 +42,14 @@ adb shell logcat | grep "native_app"
 
 function na_stop()
 {
-    am force-stop com.example.native_activity
+    adb shell am force-stop com.example.native_activity
 }
 
 function na_start()
 {
     file=$1
     
-    readelf -sW $1 | grep android_main1 || echo "executable or library does not contain android_main1" && return 
+    readelf -sW $1 | grep "\bandroid_main1\b" || (echo "executable or library does not contain android_main1" && return)
     na_stop
     adb shell logcat -c
     adb push $file /data/data/com.example.native_activity/files/ 

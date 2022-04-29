@@ -49,11 +49,7 @@ function na_start()
 {
     file=$1
     
-    if [[ readelf -sW $1 | grep android_main1 ]]; then
-    else
-        echo "executable or library does not contain android_main1"
-        return 
-    fi
+    readelf -sW $1 | grep android_main1 || echo "executable or library does not contain android_main1" && return 
     na_stop
     adb shell logcat -c
     adb push $file /data/data/com.example.native_activity/files/ 

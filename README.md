@@ -20,7 +20,7 @@ adb shell setprop native_app_path /data/data/com.example.native_activity/files/a
 4. 启动native_app
 
 ```bash
- am start com.example.native_activity/android.app.NativeActivity 
+adb shell am start com.example.native_activity/android.app.NativeActivity 
 ```
 
 ## 其他命令
@@ -28,31 +28,40 @@ adb shell setprop native_app_path /data/data/com.example.native_activity/files/a
 关闭应用:
 
 ```bash
-am force-stop com.example.native_activity 
+adb shell am force-stop com.example.native_activity 
 ```
 
 查看日志：
 ```bash
-logcat | grep "native_app"
+adb shell logcat | grep "native_app"
 ```
 
 ## 总结
 
 ```bash
-function na_start()
-{
-    file=$1
-
-    adb push $file /data/data/com.example.native_activity/files/ 
-    adb setprop native_app_path /data/data/com.example.native_activity/files/$file
-    adb shell am start com.example.native_activity/android.app.NativeActivity
-    adb shell logcat | grep "native_app"
-}
 
 function na_stop()
 {
     am force-stop com.example.native_activity
 }
+
+function na_start()
+{
+    file=$1
+    
+    if [[ readelf -sW $1 | grep android_main1 ]]; then
+    else
+        echo "executable or library does not contain android_main1"
+        return 
+    fi
+    na_stop
+    adb shell logcat -c
+    adb push $file /data/data/com.example.native_activity/files/ 
+    adb shell setprop native_app_path /data/data/com.example.native_activity/files/$file
+    adb shell am start com.example.native_activity/android.app.NativeActivity
+    adb shell logcat | grep "native_app"
+}
+
 ```
 
 ## android_main1函数开发

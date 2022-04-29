@@ -107,21 +107,26 @@ void android_main(struct android_app* state) {
     auto path = property_get("native_app_path", "/data/data/com.example.native_activity/files/android_offscreen_test");
     trim(path);
     LOGI("native app path %s", path.c_str());
-    void * handle =  dlopen(path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+
+    void * handle =  dlopen(path.c_str(), RTLD_NOW);
     if(handle == nullptr) {
         LOGI("failed to dlopen %s, %s", path.c_str(), strerror(errno));
         return;
     }
+
     void (*f)(struct android_app *state);
-    f = (decltype(f))dlsym(handle, "main");
-    if(f == nullptr) {
-        LOGI("failed to dlsym, %s", strerror(errno));
+    f = (decltype(f))dlsym(handle, "android_main_override");
+    auto err = dlerror();
+    if(err != nullptr) {
+        LOGI("failed to dlsym, %s, %s", strerror(errno), err);
         return;
     }
-    LOGI("okkk");
-    // default implementation
-//    state->onAppCmd = [](android_app * app, int32_t cmd) {
-//    };
+
+    if(f == nullptr) {
+        LOGI("symbol android_main_override not found");
+        return;
+    }
+    LOGI("ok");
     state->onAppCmd = nullptr;
     state->onInputEvent = [](android_app *app, AInputEvent * event) {
         return 0;

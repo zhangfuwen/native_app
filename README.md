@@ -49,7 +49,7 @@ function na_start()
 {
     file=$1
     
-    readelf -sW $1 | grep "\bandroid_main1\b" || (echo "executable or library does not contain android_main1" && return)
+    readelf -sW $1 | grep "\bandroid_main_override\b" || (echo "executable or library does not contain android_main1" && return)
     na_stop
     adb shell logcat -c
     adb push $file /data/data/com.example.native_activity/files/ 
